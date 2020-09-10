@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-import garagedoorgpio
 
 
 class DoorMessage :
@@ -27,6 +26,7 @@ def publish_message(project, topic, doorMessage) :
     print("published messages")
 
 def watch_door_status() :
+    import garagedoorgpio
     garagedoorgpio.monitor_door(door_opened, door_closed)
 
 def door_opened() :
@@ -38,5 +38,6 @@ def door_closed() :
 
 PROJECT = "garagepi-2389102"
 TOPIC = "garagecommand"
-#publish_message("garagepi-289102", "garagecommand", DoorMessage("open", "door is open", datetime.utcnow().timestamp()))
-watch_door_status()
+
+if __name__ == '__main__' :
+    watch_door_status()
