@@ -1,19 +1,18 @@
 import os
 import gpiozero
-#import RPi.GPIO as gpio
-import pigpio
 from time import sleep
 from signal import pause
 
-piname = 'garagepi'
 RELAY_PIN = 2
 CLOSE_SENSOR_PIN = 4
 
 relay = gpiozero.OutputDevice(RELAY_PIN)
 door_sensor = gpiozero.LineSensor(CLOSE_SENSOR_PIN)
-#gpio.setmode(gpio.BCM)
-#gpio.setwarnings(False)
-#gpio.setup(CLOSE_SENSOR_PIN, gpio.IN)
+
+def monitor_door(openCallback, closeCallback) :
+    door_sensor.when_line = openCallback
+    door_sensor.when_no_line = closeCallback
+    pause()
 
 def is_door_open():
     if door_sensor.value == 0 :
