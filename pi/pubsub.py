@@ -27,16 +27,20 @@ def publish_message(project, topic, doorMessage) :
 
 def watch_door_status() :
     import garagedoorgpio
+    door_status = "open" if garagedoorgpio.is_door_open() else "closed"
+    print(f"Monitoring garage door status (currently {door_status})")
     garagedoorgpio.monitor_door(door_opened, door_closed)
 
 def door_opened() :
+    print("Detected door opened")
     publish_message(PROJECT, TOPIC, DoorMessage("open", "Open detected by watcher"))
 
 def door_closed() :
+    print("Detected door closed")
     publish_message(PROJECT, TOPIC, DoorMessage("closed", "Close detected by watcher"))
 
 
-PROJECT = "garagepi-2389102"
+PROJECT = "garagepi-289102"
 TOPIC = "garagecommand"
 
 if __name__ == '__main__' :
