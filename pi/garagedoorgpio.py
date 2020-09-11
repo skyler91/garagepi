@@ -4,7 +4,7 @@ from time import sleep
 from signal import pause
 from enum import Enum
 
-RELAY_PIN = 2
+RELAY_PIN = 17
 CLOSE_SENSOR_PIN = 14
 
 relay = gpiozero.OutputDevice(RELAY_PIN)
