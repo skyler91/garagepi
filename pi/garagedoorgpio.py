@@ -4,10 +4,10 @@ from time import sleep
 from signal import pause
 
 RELAY_PIN = 2
-CLOSE_SENSOR_PIN = 4
+CLOSE_SENSOR_PIN = 14
 
 relay = gpiozero.OutputDevice(RELAY_PIN)
-door_sensor = gpiozero.LineSensor(CLOSE_SENSOR_PIN)
+door_sensor = gpiozero.LineSensor(CLOSE_SENSOR_PIN, sample_rate=10)
 
 def monitor_door(openCallback, closeCallback) :
     door_sensor.when_line = openCallback
@@ -17,11 +17,9 @@ def monitor_door(openCallback, closeCallback) :
 def is_door_open():
     if door_sensor.value == 0 :
         # Door is open!
-        print("Door is open")
         return True
     else :
         # Door is closed!
-        print("Door is closed")
         return False
 
 def open_door():
@@ -47,7 +45,4 @@ def print_close():
 if __name__ == "__main__":
     door_sensor.when_line = print_open
     door_sensor.when_no_line = print_close
-    while(True):
-        print(str(door_sensor.value))
-        sleep(0.1)
     pause()
