@@ -6,34 +6,44 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ProgressBar
-        android:id="@+id/statusSpinner"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/iconLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:visibility="invisible"/>
-    <ImageView
-        android:id="@+id/statusIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        app:layout_constraintTop_toTopOf="@id/statusSpinner"
-        app:layout_constraintLeft_toLeftOf="@id/statusSpinner"
-        app:layout_constraintRight_toRightOf="@id/statusSpinner"
-        app:layout_constraintBottom_toBottomOf="@id/statusSpinner"
-        android:src="@drawable/ic_offline"/>
+        app:layout_constraintRight_toRightOf="parent">
+        <ProgressBar
+            android:id="@+id/statusSpinner"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:visibility="invisible"/>
+        <ImageView
+            android:id="@+id/statusIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            app:layout_constraintTop_toTopOf="@id/statusSpinner"
+            app:layout_constraintLeft_toLeftOf="@id/statusSpinner"
+            app:layout_constraintRight_toRightOf="@id/statusSpinner"
+            app:layout_constraintBottom_toBottomOf="@id/statusSpinner"
+            android:src="@drawable/ic_offline"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/statusLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:padding="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statusSpinner">
+        app:layout_constraintTop_toBottomOf="@id/iconLayout">
         <TextView
             android:id="@+id/statusTitle"
             android:layout_width="wrap_content"
@@ -51,16 +61,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:padding="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/statusLayout">
 
         <Button
             android:id="@+id/toggleButton"
-            android:layout_width="500px"
-            android:layout_height="300px"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:onClick="onToggleButtonClick"
-            tools:text="Toggle Door" />
+            android:text="Toggle Door" />
     </LinearLayout>
 
     <LinearLayout
