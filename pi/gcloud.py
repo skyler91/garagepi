@@ -8,8 +8,13 @@ default_app = initialize_app()
 db = firestore.client()
 statusCollection = db.collection("status")
 
+# TODO: Get project/topic from ENV
+PROJECT = "garagepi-289102"
+TOPIC = "garagecommand"
+SUBSCRIPTION = "garagestatus"
+
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path = subscriber.subscription_path(PROJECT, TOPIC)
+subscription_path = subscriber.subscription_path(PROJECT, SUBSCRIPTION)
 
 class DoorMessage :
     def __init__(self, status, message) :
@@ -54,7 +59,3 @@ def subscribe_to_garagecommand() :
 
 def get_door_status() :
     return statusCollection.document("latest").get().to_dict()
-
-# TODO: Get project/topic from ENV
-PROJECT = "garagepi-289102"
-TOPIC = "garagecommand"

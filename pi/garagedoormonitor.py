@@ -2,12 +2,12 @@
 import gcloud
 import garagedoorgpio
 
-def startMonitor() :
+def start_monitor() :
     door_status = garagedoorgpio.get_door_status()
     print(f"Monitoring garage door status (currently {door_status})")
     garagedoorgpio.monitor_door(door_opened, door_closed)
 
-def setInitialStatus() :
+def set_initial_status() :
     statusFromCloud = gcloud.get_door_status()['status']
     statusFromDoor = f"{garagedoorgpio.get_door_status()}"
     print(f"Initial cloud status: {statusFromCloud}")
@@ -25,5 +25,5 @@ def door_closed() :
     gcloud.publish_message("closed", "Close detected by watcher")
 
 if __name__ == '__main__' :
-    setInitialStatus()
-    startMonitor()
+    set_initial_status()
+    start_monitor()
