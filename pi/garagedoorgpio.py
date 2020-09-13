@@ -2,17 +2,13 @@ import os
 import gpiozero
 from time import sleep
 from signal import pause
-from enum import Enum
+from messages import DoorStatus
 
 RELAY_PIN = 17
 CLOSE_SENSOR_PIN = 14
 
 relay = gpiozero.OutputDevice(RELAY_PIN)
 door_sensor = gpiozero.LineSensor(CLOSE_SENSOR_PIN, sample_rate=10)
-
-class DoorStatus(str, Enum) :
-    OPEN = "open"
-    CLOSED = "closed"
 
 def monitor_door(openCallback, closeCallback) :
     door_sensor.when_line = openCallback
