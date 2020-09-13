@@ -1,15 +1,21 @@
 import json
-import garagedoorgpio
 from datetime import datetime
 from firebase_admin import credentials, firestore, initialize_app
 from google.cloud import pubsub_v1
 
+# TODO: Initialize when needed?
 default_app = initialize_app()
 db = firestore.client()
 statusCollection = db.collection("status")
 
+# TODO: Get project/topic from ENV
+PROJECT = "garagepi-289102"
+TOPIC = "garagecommand"
+SUBSCRIPTION = "garagecommand"
+
+# TODO: Initialize when needed?
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path = subscriber.subscription_path(PROJECT, TOPIC)
+subscription_path = subscriber.subscription_path(PROJECT, SUBSCRIPTION)
 
 class DoorMessage :
     def __init__(self, status, message) :
@@ -33,15 +39,23 @@ def publish_message(status, message) :
     print("published messages")
 
 def garagecommand_callback(message) :
-    print(f"Received command: {message}")
-    msgDict = json.loads(message)
-    if msgDict['command'] == "open" :
-        garagedoorgpio.open_door()
-    elif msgDict['command'] == "close" :
-        garagedoorgpio.close_door()
-    else :
-        print(f"Unknown command: {msgDict['command']}")
-    message.ack()
+    print(f"Received command: {message.data}")
+    try :
+        msgDict = json.loads(message.data)
+    except :
+        print("Bad command, ignoring...")
+        return
+    cmd = msgDict.get('command')
+    if cmd :
+        if cmd == "open" :
+            import garagedoorgpio
+            garagedoorgpio.open_door()
+        elif cmd == "close" :
+            import garagedoorgpio
+            garagedoorgpio.close_door()
+        else :
+            print(f"Unknown command: {msgDict['command']}")
+        message.ack()
 
 def subscribe_to_garagecommand() :
     streaming_pull_future = subscriber.subscribe(subscription_path, callback=garagecommand_callback)
@@ -54,7 +68,3 @@ def subscribe_to_garagecommand() :
 
 def get_door_status() :
     return statusCollection.document("latest").get().to_dict()
-
-# TODO: Get project/topic from ENV
-PROJECT = "garagepi-289102"
-TOPIC = "garagecommand"
