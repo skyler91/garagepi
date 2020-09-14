@@ -1,20 +1,35 @@
 package one.skydev.garagepi
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private val refreshHandler = Handler(Looper.getMainLooper())
     private var failCount = 0
     private val MAX_FAILS = 5
+    private val RC_SIGN_IN: Int = 1
+    private val accountObserver : MutableLiveData<GoogleSignInAccount> = MutableLiveData()
+    private lateinit var googleSignInClient : GoogleSignInClient
     private lateinit var doorController : DoorController
 
     private val updateDoorStatusHandler : Handler = object : Handler(Looper.getMainLooper()) {
@@ -37,6 +52,8 @@ class MainActivity : AppCompatActivity() {
                 statusSpinner.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_online)
                 statusIcon.visibility = View.VISIBLE
+                toggleButton.text = "Close Door"
+                toggleButton.visibility = View.VISIBLE
             }
             DoorController.DoorStatus.CLOSED -> {
                 failCount = 0
@@ -44,10 +61,13 @@ class MainActivity : AppCompatActivity() {
                 statusSpinner.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_offline)
                 statusIcon.visibility = View.VISIBLE
+                toggleButton.text = "Open Door"
+                toggleButton.visibility = View.VISIBLE
             }
             DoorController.DoorStatus.LOADING -> {
                 statusSpinner.visibility = View.VISIBLE
                 statusIcon.visibility = View.INVISIBLE
+                toggleButton.visibility = View.INVISIBLE
             }
             else -> {
                 if (failCount < MAX_FAILS) {
@@ -56,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 statusTextView.text = "Error"
                 statusSpinner.visibility = View.INVISIBLE
+                toggleButton.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_error)
                 statusIcon.visibility = View.VISIBLE
             }
@@ -76,17 +97,95 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         updateDoorStatus(DoorController.DoorStatus.LOADING)
+
+        accountObserver.observe(this, Observer {
+            updateSignInStatus()
+        })
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestIdToken(BuildConfig.CLIENT_API_KEY)
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        silentSignIn()
+        accountObserver.value = GoogleSignIn.getLastSignedInAccount(this)
+        if (accountObserver.value == null) {
+            signIn()
+        }
         // TODO: Add to settings, separate port
+
         doorController = DoorController("https://us-west2-garagepi-289102.cloudfunctions.net/getdoorstatus", updateDoorStatusHandler)
+        /*
         refreshHandler.post(object : Runnable {
             override fun run() {
                 doorController.getDoorStatus()
                 refreshHandler.postDelayed(this, 5000)
             }
         })
+         */
     }
 
     fun onToggleButtonClick(view : View) {
-        if (view.isActivated) { return }
+        var cmd = DoorController.DoorCommand.CLOSE
+        if (toggleButton.text == "Open Door") {
+            cmd = DoorController.DoorCommand.OPEN
+        }
+        doorController.sendDoorCommand("https://us-west2-garagepi-289102.cloudfunctions.net/toggledoor", accountObserver.value?.idToken, cmd)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleSignInResult(task)
+        }
+    }
+
+    private fun handleSignInResult(task : Task<GoogleSignInAccount>) {
+        if (!task.isSuccessful) {
+            val msg = "Failed to sign in: ${task.exception?.message}"
+            Log.e("ERROR", msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            accountObserver.value = null
+            return
+        }
+        try {
+            accountObserver.value = task.getResult(ApiException::class.java)
+        }
+        catch (e: ApiException) {
+            val msg = "Failed to sign in: ${e.message} (${e.statusCode})"
+            Log.e("ERROR", msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            accountObserver.value = null
+        }
+    }
+
+    private fun updateSignInStatus() {
+        if (accountObserver.value != null) {
+            // Login successful
+            doorController.getDoorStatus(accountObserver.value?.idToken)
+            // TODO: Create setting for refresh delay
+            refreshHandler.removeCallbacksAndMessages(null)
+            refreshHandler.post(object : Runnable {
+                override fun run() {
+                    doorController.getDoorStatus(accountObserver.value?.idToken)
+                    refreshHandler.postDelayed(this, 5000)
+                }
+            })
+        } else {
+            updateDoorStatus(DoorController.DoorStatus.UNKNOWN)
+            refreshHandler.removeCallbacksAndMessages(null)
+        }
+    }
+
+    private fun signIn() {
+        startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
+    }
+
+    private fun silentSignIn() {
+        googleSignInClient.silentSignIn().addOnCompleteListener(this) {
+            task -> handleSignInResult(task)
+        }
     }
 }

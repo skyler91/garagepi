@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
@@ -16,12 +18,43 @@ internal class DoorController(private val address: String, private val handler: 
         UNKNOWN
     }
 
-    internal fun getDoorStatus() {
-        //updateDoorStatus(DoorStatus.LOADING)
-        // TODO: Set up authentication
+    enum class DoorCommand(val commandString : String) {
+        OPEN("{\"command\": \"open\"}"),
+        CLOSE("{\"command\": \"close\"}")
+    }
+
+    internal fun sendDoorCommand(address : String, userToken : String?, cmd : DoorCommand) {
+        // TODO: use gson?
         val httpClient = OkHttpClient()
         val request = Request.Builder()
             .url(URL(address))
+            .header("Authorization", "Bearer $userToken")
+            .post(cmd.commandString.toRequestBody("application/json; charset=utf-8".toMediaType()))
+            .build()
+
+        httpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                TODO("sendDoorCommand onFailure not yet implemented")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!response.isSuccessful) {
+                        TODO("sendDoorCommand onResponse (fail) not yet implemented")
+                    }
+
+                    // TODO: Handle result
+                    val resultBody = response.body?.string()
+                }
+            }
+        })
+    }
+
+    internal fun getDoorStatus(userToken : String?) {
+        val httpClient = OkHttpClient()
+        val request = Request.Builder()
+            .url(URL(address))
+            .header("Authorization", "Bearer $userToken")
             .build()
 
         // TODO: Return error strings
