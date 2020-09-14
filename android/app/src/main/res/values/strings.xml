@@ -7,4 +7,6 @@
     <string name="error">Error</string>
     <string name="failedsignin">Failed to sign in: </string>
     <string name="errorunexpectedreturncode">Unexpected return code: </string>
+    <string name="sharedprefskey">one.skydev.garagepi.sharedprefs</string>
+    <string name="googleloginkey">one.skydev.garagepi.googlelogin</string>
 </resources>
