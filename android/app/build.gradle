@@ -2,9 +2,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
-def apikeyPropertiesFile = rootProject.file("apikey.properties")
-def apikeyProperties = new Properties()
-apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
+def configPropertiesFile = rootProject.file("config.properties")
+def configProperties = new Properties()
+configProperties.load(new FileInputStream(configPropertiesFile))
 
 android {
     compileSdkVersion 30
@@ -17,7 +17,10 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField("String", "CLIENT_API_KEY", apikeyProperties["CLIENT_API_KEY"])
+        buildConfigField("String", "CLIENT_API_KEY", configProperties["CLIENT_API_KEY"])
+        buildConfigField("String", "BASE_URL", configProperties["BASE_URL"])
+        buildConfigField("String", "DOOR_STATUS_ENDPOINT", configProperties["DOOR_STATUS_ENDPOINT"])
+        buildConfigField("String", "DOOR_COMMAND_ENDPOINT", configProperties["DOOR_COMMAND_ENDPOINT"])
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

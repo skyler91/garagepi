@@ -48,20 +48,20 @@ class MainActivity : AppCompatActivity() {
         when(status) {
             DoorController.DoorStatus.OPEN -> {
                 failCount = 0
-                statusTextView.text = "Open"
+                statusTextView.text = getString(R.string.open)
                 statusSpinner.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_online)
                 statusIcon.visibility = View.VISIBLE
-                toggleButton.text = "Close Door"
+                toggleButton.text = getString(R.string.closedoor)
                 toggleButton.visibility = View.VISIBLE
             }
             DoorController.DoorStatus.CLOSED -> {
                 failCount = 0
-                statusTextView.text = "Closed"
+                statusTextView.text = getString(R.string.close)
                 statusSpinner.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_offline)
                 statusIcon.visibility = View.VISIBLE
-                toggleButton.text = "Open Door"
+                toggleButton.text = getString(R.string.opendoor)
                 toggleButton.visibility = View.VISIBLE
             }
             DoorController.DoorStatus.LOADING -> {
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                     failCount++
                     return
                 }
-                statusTextView.text = "Error"
+                statusTextView.text = getString(R.string.error)
                 statusSpinner.visibility = View.INVISIBLE
                 toggleButton.visibility = View.INVISIBLE
                 statusIcon.setImageResource(R.drawable.ic_error)
@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
         }
         // TODO: Add to settings, separate port
 
-        doorController = DoorController("https://us-west2-garagepi-289102.cloudfunctions.net/getdoorstatus", updateDoorStatusHandler)
+        doorController = DoorController(updateDoorStatusHandler)
         /*
         refreshHandler.post(object : Runnable {
             override fun run() {
@@ -127,10 +127,10 @@ class MainActivity : AppCompatActivity() {
 
     fun onToggleButtonClick(view : View) {
         var cmd = DoorController.DoorCommand.CLOSE
-        if (toggleButton.text == "Open Door") {
+        if (toggleButton.text == getString(R.string.opendoor)) {
             cmd = DoorController.DoorCommand.OPEN
         }
-        doorController.sendDoorCommand("https://us-west2-garagepi-289102.cloudfunctions.net/toggledoor", accountObserver.value?.idToken, cmd)
+        doorController.sendDoorCommand(accountObserver.value?.idToken, cmd)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleSignInResult(task : Task<GoogleSignInAccount>) {
         if (!task.isSuccessful) {
-            val msg = "Failed to sign in: ${task.exception?.message}"
+            val msg = getString(R.string.failedsignin) + task.exception?.message
             Log.e("ERROR", msg)
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             accountObserver.value = null
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
             accountObserver.value = task.getResult(ApiException::class.java)
         }
         catch (e: ApiException) {
-            val msg = "Failed to sign in: ${e.message} (${e.statusCode})"
+            val msg = "${getString(R.string.failedsignin)} ${e.message} (${e.statusCode})"
             Log.e("ERROR", msg)
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             accountObserver.value = null

@@ -1,5 +1,6 @@
 package one.skydev.garagepi
 
+import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
@@ -10,7 +11,11 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 
-internal class DoorController(private val address: String, private val handler: Handler) {
+internal class DoorController(private val handler: Handler) {
+    private val baseUrl = BuildConfig.BASE_URL
+    private val statusEndpoint = BuildConfig.DOOR_STATUS_ENDPOINT
+    private val commandEndpoint = BuildConfig.DOOR_COMMAND_ENDPOINT
+
     enum class DoorStatus {
         OPEN,
         CLOSED,
@@ -23,11 +28,11 @@ internal class DoorController(private val address: String, private val handler: 
         CLOSE("{\"command\": \"close\"}")
     }
 
-    internal fun sendDoorCommand(address : String, userToken : String?, cmd : DoorCommand) {
+    internal fun sendDoorCommand(userToken : String?, cmd : DoorCommand) {
         // TODO: use gson?
         val httpClient = OkHttpClient()
         val request = Request.Builder()
-            .url(URL(address))
+            .url(URL(baseUrl + commandEndpoint))
             .header("Authorization", "Bearer $userToken")
             .post(cmd.commandString.toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
@@ -53,7 +58,7 @@ internal class DoorController(private val address: String, private val handler: 
     internal fun getDoorStatus(userToken : String?) {
         val httpClient = OkHttpClient()
         val request = Request.Builder()
-            .url(URL(address))
+            .url(URL(baseUrl + statusEndpoint))
             .header("Authorization", "Bearer $userToken")
             .build()
 
@@ -67,7 +72,7 @@ internal class DoorController(private val address: String, private val handler: 
                 response.use {
                     if (!response.isSuccessful) {
                         updateDoorStatus(DoorStatus.UNKNOWN)
-                        throw IOException("Unexpected return code: $response")
+                        throw IOException("${Resources.getSystem().getString(R.string.errorunexpectedreturncode)} $response")
                     }
 
                     // TODO: Error handling for json object
