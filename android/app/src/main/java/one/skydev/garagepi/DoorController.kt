@@ -88,7 +88,7 @@ internal class DoorController(private val handler: Handler) {
         })
     }
 
-    private fun updateDoorStatus(status : DoorController.DoorStatus) {
+    private fun updateDoorStatus(status : DoorStatus) {
         val message = Message.obtain()
         val bundle = Bundle()
         bundle.putSerializable("status", status)
