@@ -1,9 +1,10 @@
 from google.cloud import pubsub_v1
+import json
 
 publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path("garagepi-289102", "garagecommand")
 
-def hello_world(request):
+def toggle_door(request):
     """Responds to any HTTP request.
     Args:
         request (flask.Request): HTTP request object.
@@ -12,11 +13,12 @@ def hello_world(request):
         Response object using
         `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
     """
+    print("In toggle_door")
     request_json = request.get_json()
 
     print(f"Request: {request_json}")
     if request_json and 'command' in request_json:
-        data = data.encode(request_json)
+        data = json.dumps(request_json).encode("utf-8")
         future = publisher.publish(topic_path, data)
         print(future.result())
     else:
