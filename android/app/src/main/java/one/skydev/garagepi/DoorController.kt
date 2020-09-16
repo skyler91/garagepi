@@ -72,7 +72,7 @@ internal class DoorController(private val handler: Handler) {
                 response.use {
                     if (!response.isSuccessful) {
                         updateDoorStatus(DoorStatus.UNKNOWN)
-                        throw IOException("${Resources.getSystem().getString(R.string.errorunexpectedreturncode)} $response")
+                        throw IOException("Unexpected return code: $response")
                     }
 
                     // TODO: Error handling for json object
