@@ -23,15 +23,25 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:visibility="invisible"/>
+        <pl.droidsonroids.gif.GifImageView
+            android:id="@+id/garagedoorgif"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:src="@drawable/garagedoorclose"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
         <ImageView
             android:id="@+id/statusIcon"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
-            app:layout_constraintTop_toTopOf="@id/statusSpinner"
-            app:layout_constraintLeft_toLeftOf="@id/statusSpinner"
-            app:layout_constraintRight_toRightOf="@id/statusSpinner"
-            app:layout_constraintBottom_toBottomOf="@id/statusSpinner"
+            app:layout_constraintTop_toTopOf="@id/garagedoorgif"
+            app:layout_constraintLeft_toLeftOf="@id/garagedoorgif"
+            app:layout_constraintRight_toRightOf="@id/garagedoorgif"
+            app:layout_constraintBottom_toBottomOf="@id/garagedoorgif"
             android:src="@drawable/ic_offline"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

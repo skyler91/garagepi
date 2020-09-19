@@ -2,8 +2,10 @@
     <string name="app_name">GaragePi</string>
     <string name="open">Open</string>
     <string name="opendoor">Open Door</string>
-    <string name="close">Close</string>
+    <string name="close">Closed</string>
     <string name="closedoor">Close Door</string>
+    <string name="opening">Opening</string>
+    <string name="closing">Closing</string>
     <string name="error">Error</string>
     <string name="failedsignin">Failed to sign in: </string>
     <string name="errorunexpectedreturncode">Unexpected return code: </string>

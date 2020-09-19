@@ -20,7 +20,9 @@ internal class DoorController(private val handler: Handler) {
         OPEN,
         CLOSED,
         LOADING,
-        UNKNOWN
+        UNKNOWN,
+        OPENING,
+        CLOSING
     }
 
     enum class DoorCommand(val commandString : String) {
