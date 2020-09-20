@@ -68,9 +68,9 @@ class MainActivity : AppCompatActivity() {
             }
             DoorController.DoorStatus.CLOSED -> {
                 failCount = 0
-                statusTextView.text = getString(R.string.close)
                 statusSpinner.visibility = View.INVISIBLE
                 statusIcon.visibility = View.INVISIBLE
+
                 when(previousStatus) {
                     DoorController.DoorStatus.LOADING, DoorController.DoorStatus.UNKNOWN -> {
                         statusGifImageView.setImageResource(R.drawable.garagedooropen)
@@ -84,6 +84,7 @@ class MainActivity : AppCompatActivity() {
                         return
                     }
                 }
+                statusTextView.text = getString(R.string.close)
                 statusGifImageView.visibility = View.VISIBLE
                 toggleButton.text = getString(R.string.opendoor)
                 toggleButton.visibility = View.VISIBLE
@@ -125,21 +126,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         previousStatus = status
+        findViewById<TextView>(R.id.statusMessageText).text = bundle.get("message").toString()
         findViewById<TextView>(R.id.lastUpdatedTime).text = Calendar.getInstance().time.toString()
-    }
-
-    private fun updateDoorStatus(status : DoorController.DoorStatus) {
-        val message = Message.obtain()
-        val bundle = Bundle()
-        bundle.putSerializable("status", status)
-        message.data = bundle
-        handleDoorMessage(message)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        updateDoorStatus(DoorController.DoorStatus.LOADING)
 
         GlobalScope.async {validateIdToken()}
     }
@@ -147,6 +140,7 @@ class MainActivity : AppCompatActivity() {
     private fun continueCreation(validToken : Boolean) {
         if (validToken) {
             doorController = DoorController(updateDoorStatusHandler)
+            doorController.updateDoorStatus(DoorController.DoorStatus.LOADING, "Android onCreate")
             Handler(Looper.getMainLooper()).post(object : Runnable {
                 override fun run() {
                     doorController.getDoorStatus(getGoogleIdTokenFromSharedPrefs())
@@ -161,14 +155,14 @@ class MainActivity : AppCompatActivity() {
     fun onToggleButtonClick(view : View) {
         when(previousStatus) {
             DoorController.DoorStatus.CLOSED -> {
-                updateDoorStatus(DoorController.DoorStatus.OPENING)
+                doorController.updateDoorStatus(DoorController.DoorStatus.OPENING, "Android onToggleButtonClick")
                 doorController.sendDoorCommand(
                     getGoogleIdTokenFromSharedPrefs(),
                     DoorController.DoorCommand.OPEN
                 )
             }
             DoorController.DoorStatus.OPEN -> {
-                updateDoorStatus(DoorController.DoorStatus.CLOSING)
+                doorController.updateDoorStatus(DoorController.DoorStatus.CLOSING, "Android onToggleButtonClick")
                 doorController.sendDoorCommand(
                     getGoogleIdTokenFromSharedPrefs(),
                     DoorController.DoorCommand.CLOSE

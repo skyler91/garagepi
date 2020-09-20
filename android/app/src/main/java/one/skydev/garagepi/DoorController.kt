@@ -16,13 +16,19 @@ internal class DoorController(private val handler: Handler) {
     private val statusEndpoint = BuildConfig.DOOR_STATUS_ENDPOINT
     private val commandEndpoint = BuildConfig.DOOR_COMMAND_ENDPOINT
 
-    enum class DoorStatus {
-        OPEN,
-        CLOSED,
-        LOADING,
-        UNKNOWN,
-        OPENING,
-        CLOSING
+    enum class DoorStatus(val statusString: String) {
+        OPEN("open"),
+        CLOSED("closed"),
+        LOADING("loading"),
+        UNKNOWN("unknown"),
+        OPENING("opening"),
+        CLOSING("closing");
+
+        companion object {
+            fun fromStatusString(statusString : String) : DoorStatus = values().find {
+                it.statusString == statusString
+            }?: UNKNOWN
+        }
     }
 
     enum class DoorCommand(val commandString : String) {
@@ -30,7 +36,7 @@ internal class DoorController(private val handler: Handler) {
         CLOSE("{\"command\": \"close\"}")
     }
 
-    internal fun sendDoorCommand(userToken : String?, cmd : DoorCommand) {
+    internal fun sendDoorCommand(userToken: String?, cmd: DoorCommand) {
         // TODO: use gson?
         val httpClient = OkHttpClient()
         val request = Request.Builder()
@@ -67,33 +73,37 @@ internal class DoorController(private val handler: Handler) {
         // TODO: Return error strings
         httpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                updateDoorStatus(DoorStatus.UNKNOWN)
+                updateDoorStatus(DoorStatus.UNKNOWN, "DoorController onHttpClientFailure", e.message.orEmpty())
             }
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (!response.isSuccessful) {
-                        updateDoorStatus(DoorStatus.UNKNOWN)
+                        updateDoorStatus(DoorStatus.UNKNOWN, "DoorController unsuccessfulHttpResponse", response.message)
                         throw IOException("Unexpected return code: $response")
                     }
 
                     // TODO: Error handling for json object
                     val jsonObj = JSONObject(response.body?.string())
                     val status = jsonObj.get("status")
-                    updateDoorStatus(when(status) {
-                        "open" -> DoorStatus.OPEN
-                        "closed" -> DoorStatus.CLOSED
-                        else -> DoorStatus.UNKNOWN
-                    })
+                    updateDoorStatus(
+                        DoorStatus.fromStatusString(status.toString()),
+                    "DoorController httpUpdate")
                 }
             }
         })
     }
 
-    private fun updateDoorStatus(status : DoorStatus) {
+    internal fun updateDoorStatus(
+        status: DoorStatus,
+        source: String,
+        statusMessage: String = ""
+    ) {
         val message = Message.obtain()
         val bundle = Bundle()
         bundle.putSerializable("status", status)
+        bundle.putString("source",  source)
+        bundle.putString("message", statusMessage)
         message.data = bundle
         handler.sendMessage(message)
     }
