@@ -37,7 +37,8 @@ internal class DoorController(private val handler: Handler) {
     }
 
     internal fun sendDoorCommand(userToken: String?, cmd: DoorCommand) {
-        // TODO: use gson?
+        // TODO: use gson!
+        // TODO: Add message and userid to request
         val httpClient = OkHttpClient()
         val request = Request.Builder()
             .url(URL(baseUrl + commandEndpoint))

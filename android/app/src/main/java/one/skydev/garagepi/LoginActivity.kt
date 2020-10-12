@@ -13,9 +13,15 @@ import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener {
     private val accountObserver : MutableLiveData<GoogleSignInAccount> = MutableLiveData()
+    private lateinit var auth : FirebaseAuth
     private lateinit var googleSignInClient : GoogleSignInClient
     private lateinit var gso : GoogleSignInOptions
     private val RC_SIGN_IN: Int = 1
@@ -28,15 +34,30 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
             updateSignInStatus()
         })
 
+        auth = Firebase.auth
+
         findViewById<SignInButton>(R.id.sign_in_button).setOnClickListener(this)
         gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestIdToken(BuildConfig.CLIENT_API_KEY)
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
-
+        /*
         if (accountObserver.value == null) {
             silentSignIn()
+        }*/
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Check if user is signed in
+        val currentUser = auth.currentUser
+        updateUI(currentUser)
+    }
+
+    private fun updateUI(user: FirebaseUser?) {
+        if (user != null) {
+            startActivity(Intent(this, MainActivity::class.java))
         }
     }
 
@@ -44,8 +65,16 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == RC_SIGN_IN) {
+            //val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            //handleSignInResult(task)
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                firebaseAuthWithGoogle(account?.idToken!!)
+            } catch (e: ApiException) {
+                // Failed login
+                updateUI(null)
+            }
         }
     }
 
@@ -77,6 +106,20 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             accountObserver.value = null
         }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    updateUI(user)
+                } else {
+                    Toast.makeText(this, "Authentication failed", Toast.LENGTH_SHORT).show()
+                    updateUI(null)
+                }
+            }
     }
 
     private fun updateSignInStatus() {

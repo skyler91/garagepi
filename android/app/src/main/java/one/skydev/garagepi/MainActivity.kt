@@ -13,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import pl.droidsonroids.gif.GifDrawable
@@ -24,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     private val maxRetries = 5
     private var previousStatus = DoorController.DoorStatus.LOADING
     private lateinit var doorController : DoorController
+    private lateinit var authListener : FirebaseAuth.AuthStateListener
+    private lateinit var auth : FirebaseAuth
 
     private val updateDoorStatusHandler : Handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
@@ -133,7 +138,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        auth = Firebase.auth
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
 
+        authListener = FirebaseAuth.AuthStateListener {
+            val user = auth.currentUser
+            if (user == null) {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+            }
+        }
         GlobalScope.async {validateIdToken()}
     }
 
