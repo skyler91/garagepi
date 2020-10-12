@@ -1,5 +1,6 @@
 from google.cloud import pubsub_v1
 import json
+from datetime import datetime
 
 publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path("garagepi-289102", "garagecommand")
@@ -18,7 +19,9 @@ def toggle_door(request):
 
     print(f"Request: {request_json}")
     if request_json and 'command' in request_json:
+        request_json['pub_timestamp'] = str(datetime.utcnow().timestamp())
         data = json.dumps(request_json).encode("utf-8")
+        
         future = publisher.publish(topic_path, data)
         print(future.result())
     else:
