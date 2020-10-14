@@ -2,6 +2,7 @@ import base64
 import json
 from firebase_admin import firestore, initialize_app
 from datetime import datetime
+import sys
 
 default_app = initialize_app()
 db = firestore.client()
@@ -19,9 +20,11 @@ def hello_pubsub(event, context):
     jsonMsg['sub_timestamp'] = str(datetime.utcnow().timestamp())
     print("JSON message: {}".format(jsonMsg))
 
+    if not jsonMsg.get('pub_timestamp') :
+         print("No pub_timestamp in message. Ignoring it!", file=sys.stderr)
+         return
     if statusCollection.document(jsonMsg['pub_timestamp']).get().exists :
          print("Status update with timestamp {} already exists and will be overwritten".format(jsonMsg['pub_timestamp']))
 
     statusCollection.document(jsonMsg['pub_timestamp']).set(jsonMsg)
     statusCollection.document("latest").set(jsonMsg)
-    
