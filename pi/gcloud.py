@@ -8,7 +8,6 @@ from messages import DoorMessage
 
 # TODO: Initialize when needed?
 default_app = initialize_app()
-setup_logging()
 
 db = firestore.client()
 statusCollection = db.collection("status")
@@ -75,3 +74,5 @@ def update_door_status(doorMessage) :
     logging.info(f"Publishing door status update {doorMessage.status.value} at {str(doorMessage.timestamp)}")
     statusCollection.document(str(doorMessage.timestamp)).set(doorMessage.to_json())
     statusCollection.document("latest").set(doorMessage.to_json())
+
+setup_logging()
