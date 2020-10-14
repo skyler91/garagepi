@@ -8,10 +8,8 @@ from messages import DoorMessage
 
 # TODO: Initialize when needed?
 default_app = initialize_app()
-logclient = google.cloud.logging.Client()
-logclient.get_default_handler()
-logclient.setup_logging()
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(filename)s %(levelname)s: %(message)s")
+setup_logging()
+
 db = firestore.client()
 statusCollection = db.collection("status")
 
@@ -23,6 +21,12 @@ SUBSCRIPTION = "garagecommand"
 # TODO: Initialize when needed?
 subscriber = pubsub_v1.SubscriberClient()
 subscription_path = subscriber.subscription_path(PROJECT, SUBSCRIPTION)
+
+def setup_logging() :
+    logclient = google.cloud.logging.Client()
+    logclient.get_default_handler()
+    logclient.setup_logging()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(filename)s %(levelname)s: %(message)s")
 
 def publish_message(status, message) :
     publisher = pubsub_v1.PublisherClient()

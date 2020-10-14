@@ -1,5 +1,6 @@
 # Monitors garage door status for changes and sends updates to the cloud
 import gcloud
+import logging
 import garagedoorgpio
 from messages import DoorMessage, DoorStatus
 
@@ -29,6 +30,6 @@ def door_closed() :
     #gcloud.publish_message("closed", "Close detected by watcher")
 
 if __name__ == '__main__' :
-    logging.info("test")
+    gcloud.setup_logging()
     set_initial_status()
     start_monitor()
